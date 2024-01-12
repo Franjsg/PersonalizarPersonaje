@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Personalizar Personaje</title>
+<style>
+    body{
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+    .day {
+    border: 5px dashed transparent;
+    background: #ddd;
+    margin: 1em;
+    min-height: 8em;
+    padding: 1em;
+    width: 20em;
+  }
+  
+  .day.hovering {
+    background: #b6d6fb;
+    border-color: #276cbc;
+  }
+  
+  .item {
+    cursor: pointer;
+    display: inline-block;
+    padding: 2px;
+    margin: 4px;
+  }
+
+  h1{
+    margin-left: 12px;
+    font-style: italic;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+  h3{
+    font-style:oblique;
+    background-color:rgb(110, 196, 199); 
+    border-style:inset;
+    border-color: black;
+    font-size: 14px;
+    font-weight: bold;
+    border-width: 2px;
+  }
+
+
+  #elementos {
+        width: 830px;
+        height: auto;
+        position: absolute;
+        top: 50px;
+        left: 20px;
+        z-index: 10;
+        border: 5px solid #000;
+        display: none;
+    }
+  
+  #personaje {
+        width: 156px;
+        height: 354px;
+        position: absolute;
+        top: -6px;
+        left: 959px;
+        z-index: 1;
+        border: 5px solid #000;
+    }
+
+    #personajebasegris {
+        width: 120px;
+        height: auto;
+        position: absolute;
+        top: 0px;
+        z-index: -50;
+    }
+    .cabezas {
+        width: 81px;
+        height: auto;
+    }
+    .zapatos {
+        width: 95px;
+        height: auto;
+    }
+    .pantalones {
+        width: 79px;
+        height: auto;
+    }
+
+    .camisetas {
+        width: 122px;
+        height: auto;
+    }
+    .secciones{
+        height: 100px;
+        width: 1000px;
+    }
+
+    .textToImageRightPanel{
+        width: 800px;
+    }
+    #contenedordroppable{
+        position: absolute;
+        top: 230px;
+        left: 0px;
+        z-index: 10;
+    }
+    #zonacabeza{
+        position: absolute;
+        top: 33px;
+        left: 1000px;
+        z-index: 100;
+    }
+    #zonacamiseta{
+        position: absolute;
+        top: 117px;
+        left: 984px;
+        z-index: 100;
+    }
+    #zonapantalon{
+        position: absolute;
+        top: 195px;
+        left: 1006px;
+        z-index: 100;
+    }
+    #zonazapato{
+        position: absolute;
+        top: 274px;
+        left: 1005px;
+        z-index: 100;
+    }
+    .contenedorcardpile{
+        width: 881px;
+        padding: 40px;
+        background-color: #dddddd;
+        border-style: outset;
+        border-color: black;
+        margin-top: 12px;
+        margin-left: 14px;
+    }
+    *{
+        margin:0;
+        padding:0;
+        box-sizing: border-box;
+    }
+
+.ui-draggable-container{
+    padding:0px;
+}
+
+.ui-draggable-container li{
+    padding:0px;
+    margin:5px;
+    display:inline-block;
+    position:relative;
+    z-index:9999;
+    text-align:center;
+    min-width:60px;
+    cursor: move;
+    width: 120px;;
+}
+
+#cardSlots li{
+    width: 100%;
+    border: 0px solid black;
+    z-index: 9999;
+}
+
+.ui-draggable-container li.disabled{
+    color: lightgrey;
+    cursor:no-drop;
+    border: red;
+    border-style: solid;
+    border-width: 3px;
+}
+
+#cardSlots{ background:#444; width:100%; height:500px; position:relative; }
+#cardSlots .ui-droppable{ 
+    position:absolute;  
+    width:130px; 
+    height:100px;
+    border: blue;
+    border-style: none;
+    border-width: 0px;
+}
+#cardSlots .ui-droppable li.ui-draggable{ 
+    padding:10px; 
+    margin-right:0px; 
+    display:inline-block;
+    cursor: move;
+}
+#creditos{
+    position: absolute;
+    left: 16px;
+    font-size: 12px;
+}
+.titulo{
+    font-weight: bold;
+    text-align: center;
+    background-color: #444;
+    padding: 5px;
+    color: #ffffff;
+    margin: 0;
+}
+#reset {
+    position: absolute;
+    color: #ffffff;
+    margin: 5px;
+    cursor: pointer;
+    left: -10px;
+    top: 350px;
+    width: 156px;
+    background-color: #444;
+    text-align: center;
+  }
+
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+<script>   
+    var draggable_options = {
+    helper: 'clone', //produce a clone of the card when being dragged
+    cursor: 'move', //cursor to show when being dragged
+    revert: 'invalid' //revert to initial position if condition in accept function is not met
+    }
+
+    function disableDragging(element){
+    element.addClass("disabled") //just style the original element to be greyed out
+    element.draggable(draggable_options).draggable('disable') //disable the dragging of the original element
+    }
+
+
+    function checkIfShouldAcceptTheDraggable(droppable){
+    if ($(droppable).prop("tagName").toLowerCase() === "ul" && $(droppable).parent().attr("id") === "cardSlots") {
+        return $(droppable).find("li").length === 0 //if it is a slot and it has no children, accept the card
+    }
+    return true //if it's a droppable but not a slot, accept the card with no condition
+    }
+
+    function getTarget(event) {
+        var target = $(event.target)
+        var id = target.attr("id")
+        if (id === "cardSlots") {
+            return "cardSlots"
+        } else if (id === "cardPile") {
+            return "cardPile"
+        } else if (target.prop("tagName").toLowerCase() === "ul" && target.parent().attr("id") === "cardSlots") {
+            return "slot"
+        }
+    }
+
+    function handleDropOutsideSlot(card, original){
+    /*
+        if the card came from the card pile and was dropped inside the cardPile, do nothing. Otherwise:
+    */
+    if (card.parent().parent().attr("id") !== "cardPile") {
+        card.remove() //remove the card from the slot where it was
+        original.removeClass("disabled") //activate card again
+        original.draggable('enable') //enable dragging again
+    }
+    }
+
+    function handleDropInsideSlot(droppable, ui, card, original){
+    var parent = card.parent()
+
+    if (!parent.hasClass("ui-droppable"))
+        card = ui.helper.clone() //get the clone of the dropped card
+
+    $(card).draggable(draggable_options) //make card draggable again*/
+    card.attr('style', '') //remove all inline styles imposed by jquery ui
+    $(droppable).append(card) //append the card to the list where it was placed
+    disableDragging(original)
+    }
+
+    function handleDrop(droppable, event,ui){
+        var target = getTarget(event)
+        var card = ui.draggable
+        var original = $("#cardPile").find("li[data-tabidx=" + card.attr("data-tabidx") + "]")
+        if (target === "cardSlots" || target === "cardPile") {
+            handleDropOutsideSlot(card, original)
+        } else if (target === "slot") {
+            handleDropInsideSlot(droppable, ui, card, original)
+        }
+    }
+
+    $(document).ready(function () {
+        $(".ui-draggable").draggable(draggable_options) //make cards draggable
+
+        $(".ui-droppable").droppable({ //handle card drops
+            greedy: true,
+            drop: function (event, ui) {
+            handleDrop(this, event, ui)
+            },
+            accept: function () {
+            return checkIfShouldAcceptTheDraggable(this)
+            }
+        })
+
+        $( "#reset" ).click(function() {
+            location.reload();
+        });
+
+    })
+</script>
+</head>
+
+<body>
+    <div>        
+        <div class=" fluid_area drag_on_image" id="canvas">
+            <h1>Personalizar personaje: </h1>
+            <!--draggable-panel-start  -->
+            <div class="textToImageRightPanel">
+                <div id="cardPile" class="ui-droppable contenedorcardpile">
+                    <h1 class="titulo">Accesorios</h1>
+                    <ul tabindex="-1" class="ui-draggable-container">
+                    <br><h3>Cabezas</h3></br>
+                        <div class="secciones">  
+                            <head><style>body {background-color: powderblue;}</style></head>
+                            <li tabindex="501" data-tabidx="501" id="card1000" class="ui-draggable">
+                                <span id="sp_card1000">
+                                    <img src="imagenes/cabeza1.png" class="cabezas" alt="cabeza1">
+                                </span>
+                            </li>
+                            <li tabindex="502" data-tabidx="502" id="card1000" class="ui-draggable">
+                                <span id="sp_card1000">
+                                    <img src="imagenes/cabeza2.png" class="cabezas" alt="cabeza2">
+                                </span>
+                            </li>
+                            <li tabindex="503" data-tabidx="503" id="card1000" class="ui-draggable">
+                                <span id="sp_card1000">
+                                    <img src="imagenes/cabeza3.png" class="cabezas" alt="cabeza3">
+                                </span>
+                            </li>
+                            <li tabindex="504" data-tabidx="504" id="card1000" class="ui-draggable">
+                                <span id="sp_card1000">
+                                    <img src="imagenes/cabeza4.png" class="cabezas" alt="cabeza4">
+                                </span>
+                            </li>
+                            <li tabindex="505" data-tabidx="505" id="card1000" class="ui-draggable">
+                                <span id="sp_card1000">
+                                    <img src="imagenes/cabeza5.png" class="cabezas" alt="cabeza5">
+                                </span>
+                            </li>
+                            <li tabindex="506" data-tabidx="506" id="card1000" class="ui-draggable">
+                                <span id="sp_card1000">
+                                    <img src="imagenes/cabeza6.png" class="cabezas" alt="cabeza6">
+                                </span>
+                            </li>
+                        </div>
+
+
+                        <br><h3>Camisetas</h3></br>
+                        <div class="secciones">  
+                        <li tabindex="601" data-tabidx="601" id="card2000" class="ui-draggable">
+                            <span id="sp_card2000">
+                                <img src="imagenes/camiseta1.png" class="camisetas" alt="camiseta1">
+                            </span>
+                        </li>                        
+                        <li tabindex="602" data-tabidx="602" id="card2000" class="ui-draggable">
+                            <span id="sp_card2000">
+                                <img src="imagenes/camiseta2.png" class="camisetas" alt="camiseta2">
+                            </span>
+                        </li>
+                        <li tabindex="603" data-tabidx="603" id="card2000" class="ui-draggable">
+                            <span id="sp_card2000">
+                                <img src="imagenes/camiseta3.png" class="camisetas" alt="camiseta3">
+                            </span>
+                        </li>
+                        <li tabindex="604" data-tabidx="604" id="card2000" class="ui-draggable">
+                            <span id="sp_card2000">
+                                <img src="imagenes/camiseta4.png" class="camisetas" alt="camiseta4">
+                            </span>
+                        </li>
+                        <li tabindex="605" data-tabidx="605" id="card2000" class="ui-draggable">
+                            <span id="sp_card2000">
+                                <img src="imagenes/camiseta5.png" class="camisetas" alt="camiseta5">
+                            </span>
+                        </li>
+                        <li tabindex="606" data-tabidx="606" id="card2000" class="ui-draggable">
+                            <span id="sp_card2000">
+                                <img src="imagenes/camiseta6.png" class="camisetas" alt="camiseta6">
+                            </span>
+                        </li>
+                        </div>
+
+                        <br><h3>Pantalones</h3></br>
+                        <div class="secciones">  
+                        <li tabindex="701" data-tabidx="701" id="card3000" class="ui-draggable">
+                            <span id="sp_card3000">
+                                <img src="imagenes/pantalon1.png" class="pantalones" alt="pantalon1">
+                            </span>
+                        </li>                        
+                        <li tabindex="702" data-tabidx="702" id="card3000" class="ui-draggable">
+                            <span id="sp_card3000">
+                                <img src="imagenes/pantalon2.png" class="pantalones" alt="pantalon2">
+                            </span>
+                        </li>
+                        <li tabindex="703" data-tabidx="703" id="card3000" class="ui-draggable">
+                            <span id="sp_card3000">
+                                <img src="imagenes/pantalon3.png" class="pantalones" alt="pantalon3">
+                            </span>
+                        </li>
+                        <li tabindex="704" data-tabidx="704" id="card3000" class="ui-draggable">
+                            <span id="sp_card3000">
+                                <img src="imagenes/pantalon4.png" class="pantalones" alt="pantalon4">
+                            </span>
+                        </li>
+                        <li tabindex="705" data-tabidx="705" id="card3000" class="ui-draggable">
+                            <span id="sp_card3000">
+                                <img src="imagenes/pantalon5.png" class="pantalones" alt="pantalon5">
+                            </span>
+                        </li>
+                        <li tabindex="706" data-tabidx="706" id="card3000" class="ui-draggable">
+                            <span id="sp_card3000">
+                                <img src="imagenes/pantalon6.png" class="pantalones" alt="pantalon6">
+                            </span>
+                        </li>
+                        </div>
+
+
+                        <br><h3>Zapatos</h3><br>
+                        <div class="secciones">  
+                        <li tabindex="801" data-tabidx="801" id="card4000" class="ui-draggable">
+                            <span id="sp_card4000">
+                                <img src="imagenes/zapatos1.png" class="zapatos" alt="zapatos1">
+                            </span>
+                        </li>
+                        <li tabindex="802" data-tabidx="802" id="card4000" class="ui-draggable">
+                            <span id="sp_card4000">
+                                <img src="imagenes/zapatos2.png" class="zapatos" alt="zapatos2">
+                            </span>
+                        </li>
+                        <li tabindex="803" data-tabidx="803" id="card4000" class="ui-draggable">
+                            <span id="sp_card4000">
+                                <img src="imagenes/zapatos3.png" class="zapatos" alt="zapatos3">
+                            </span>
+                        </li>
+                        <li tabindex="804" data-tabidx="804" id="card4000" class="ui-draggable">
+                            <span id="sp_card4000">
+                                <img src="imagenes/zapatos4.png" class="zapatos" alt="zapatos4">
+                            </span>
+                        </li>
+                        <li tabindex="805" data-tabidx="801" id="card4000" class="ui-draggable">
+                            <span id="sp_card4000">
+                                <img src="imagenes/zapatos5.png" class="zapatos" alt="zapatos5">
+                            </span>
+                        </li>
+                        <li tabindex="806" data-tabidx="806" id="card4000" class="ui-draggable">
+                            <span id="sp_card4000">
+                                <img src="imagenes/zapatos6.png" class="zapatos" alt="zapatos6">
+                            </span>
+                        </li>
+                        </div>
+                    </ul>
+                </div>
+                <div id="creditos">Desarrollado por: Fran Sánchez</div>
+            </div>
+            <!--draggable-panel-end  -->
+        
+            
+            <div id="contenedordroppable">
+                <div id="personaje" class="day">
+                    <img src="imagenes/personajebasegris.png" id="personajebasegris" alt="personajebasegris">                    
+                    <p id="reset">Reset<p>
+                </div>
+                <!--droppable-panel-start-->
+                <div class="textToImageLeftPanel">
+                    <div id="cardSlots" class="ui-droppable">
+                        <div title="" style="background-color:red" class="cardSlots_img"></div>
+                        <ul id="zonacabeza" tabindex="57" data-tabidx="57" data-id="card1000"
+                            class="ui-droppable">
+                        </ul>
+                        <ul id="zonacamiseta" tabindex="58" data-tabidx="58" data-id="card2000"
+                            class="ui-droppable">
+                        </ul>
+                        <ul id="zonapantalon"  tabindex="59" data-tabidx="59" data-id="card3000"
+                            class="ui-droppable">
+                        </ul>
+                        <ul id="zonazapato"  tabindex="60" data-tabidx="60" data-id="card4000"
+                            class="ui-droppable">
+                        </ul>
+                    </div>
+                </div>
+                <!--droppable-panel-end-->                
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>
